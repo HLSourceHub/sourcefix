@@ -79,17 +79,36 @@ def locate_mod():
     else:
         messagebox.showinfo("Info", "Mod directory not selected.")
 
-# Function to open a browser search for the mod SDK
+# Updated function to detect SteamAppId and select SDK automatically
 def open_sdk_help():
     mod_path = mod_var.get()
-    if mod_path:
-        mod_folder = os.path.basename(mod_path)
-        search_query = f"What Source SDK does the {mod_folder} mod use?"
-        search_url = f"https://www.google.com/search?q={search_query.replace(' ', '+')}"
-        webbrowser.open(search_url)
-        messagebox.showinfo("SDK Search", "Starting browser search for compatible SDK...")
-    else:
+    if not mod_path:
         messagebox.showwarning("Warning", "Please enter a mod path first.")
+        return
+
+    gameinfo_path = os.path.join(mod_path, "gameinfo.txt")
+
+    if os.path.exists(gameinfo_path):
+        try:
+            with open(gameinfo_path, "r") as file:
+                for line in file:
+                    # Check for the line containing "SteamAppId"
+                    if "SteamAppId" in line:
+                        # Extract the numeric value of SteamAppId
+                        steam_app_id = line.split()[-1]
+                        for sdk_name, sdk_id in SDK_LIST:
+                            if sdk_id == steam_app_id:
+                                sdk_var.set(sdk_name)
+                                messagebox.showinfo("SDK Detection", f"SteamAppId {steam_app_id} matches '{sdk_name}'. SDK automatically selected.")
+                                return
+                        # If no matching SDK is found
+                        messagebox.showwarning("Warning", f"SteamAppId {steam_app_id} not found in the SDK list.")
+                        return
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to read gameinfo.txt: {str(e)}")
+    else:
+        messagebox.showwarning("Warning", f"gameinfo.txt not found in {mod_path}.")
+
 
 # Function to detect the operating system and generate launchers accordingly
 def generate_launcher():
