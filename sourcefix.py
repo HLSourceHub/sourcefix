@@ -7,6 +7,7 @@ import time
 from PIL import Image, ImageTk
 import shutil  # Import for folder deletion
 import webbrowser  # For opening browser search
+import sys
 
 # List of SDKs to choose from, with names and corresponding numeric values
 SDK_LIST = [
@@ -173,15 +174,25 @@ def run_exe():
     else:
         messagebox.showwarning("Warning", "The executable does not exist. Please generate it first.")
 
+def resource_path(relative_path):
+    #Get the absolute path to a resource, works for dev and pyinstaller.
+    try:
+        #pyinstaller creates a temporary folder and stores the path in _MEIPASS
+        base_path = sys._MEIPASS
+    except AttributeError:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
 # Creating the main window
 root = tk.Tk()
 root.title("Sourcemod Executable Generator")
 root.geometry("450x245")
 root.config(bg="black")  # Set the background of the window to black
 
-root.iconbitmap("app_icon.ico")
+root.iconbitmap(resource_path("app_icon.ico"))
 
-bg_image = Image.open("background_art.jpg")
+bg_image = Image.open(resource_path("background_art.jpg"))
 bg_image = bg_image.resize((450, 245), Image.Resampling.LANCZOS)
 bg_image_tk = ImageTk.PhotoImage(bg_image)
 bg_label = tk.Label(root, image=bg_image_tk, bd=0)
