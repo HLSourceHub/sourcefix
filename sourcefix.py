@@ -79,7 +79,7 @@ def locate_mod():
     else:
         messagebox.showinfo("Info", "Mod directory not selected.")
 
-# Updated function to detect SteamAppId and select SDK automatically
+# Updated function to detect SteamAppId and select SDK automatically, ignoring version numbers and comments
 def open_sdk_help():
     mod_path = mod_var.get()
     if not mod_path:
@@ -92,6 +92,13 @@ def open_sdk_help():
         try:
             with open(gameinfo_path, "r") as file:
                 for line in file:
+                    # Remove comments (everything after //)
+                    line = line.split("//")[0].strip()
+
+                    # Skip empty lines or lines containing only version numbers
+                    if not line or line.isdigit() or line in ["2006", "2007", "2013"]:
+                        continue
+                    
                     # Check for the line containing "SteamAppId"
                     if "SteamAppId" in line:
                         # Extract the numeric value of SteamAppId
@@ -108,6 +115,7 @@ def open_sdk_help():
             messagebox.showerror("Error", f"Failed to read gameinfo.txt: {str(e)}")
     else:
         messagebox.showwarning("Warning", f"gameinfo.txt not found in {mod_path}.")
+
 
 
 # Function to detect the operating system and generate launchers accordingly
